@@ -5,6 +5,9 @@
 import pandas as pd
 import numpy as np
 
+import datetime
+import time
+
 import scipy.stats as stats
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.model_selection import train_test_split
@@ -18,6 +21,8 @@ from feature_engine.transformation import LogTransformer
 from feature_engine.outliers import OutlierTrimmer
 
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+
+from sklearn.metrics import accuracy_score, confusion_matrix, roc_auc_score
 
 
 def Train_model():
@@ -37,6 +42,9 @@ def Train_model():
     CATEGORICAL_VARIABLES = ['Gender', 'Customer Type', 'Type of Travel']
     CATEGORICAL_VARS_MAP = ['Class']
     OUTLIER = ['Arrival Delay in Minutes']
+    
+    
+    fecha_hora_inicio = datetime.datetime.now()
     
     pipeline_fe = Pipeline([
         #======== IMPUTACIONES =============
@@ -64,6 +72,30 @@ def Train_model():
     ])
     
     pipeline_fe.fit(dataTrain[var_preds], y_train['satisfied'])
+    
+    fecha_hora_fin = datetime.datetime.now()
+    
+    
+    predictions = pipeline_fe.predict(dataTest[var_preds])
+    accuracy = accuracy_score(y_test, predictions)
+    tn, fp, fn, tp = confusion_matrix(y_test, predictions).ravel()
+    specificity = tn / (tn+fp)
+    sensitivity = tp / (tp + fn)
+    roc_auc = roc_auc_score(y_test, predictions)
+    
+    
+    tiempo_transcurrido = fecha_hora_fin - fecha_hora_inicio
+    tiempo_transcurrido_segundos = tiempo_transcurrido.total_seconds()
+    
+    nombre_archivo = fecha_hora_inicio.strftime('%Y%m%d_%H%M%S') + '.txt'
+    
+    with open(nombre_archivo, 'a') as archivo:
+        archivo.write('Fecha y hora de ejecución: {}\n'.format(fecha_hora_inicio))
+        archivo.write('Tiempo transcurrido (segundos): {}\n'.format(tiempo_transcurrido_segundos))
+        archivo.write('Accuracy: {}\n'.format(accuracy))
+        archivo.write('Specificity: {}\n'.format(specificity))
+        archivo.write('Sensitivity: {}\n'.format(sensitivity))
+        archivo.write('\n')
     
     
 def predict():
