@@ -1,6 +1,6 @@
 # Proyecto final
 # Andrea Monzon 23006810
-# Juan Pablo Rodas
+# Juan Pablo Rodas 23007521
 
 import pandas as pd
 import numpy as np
