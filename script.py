@@ -17,11 +17,21 @@ from feature_engine.transformation import LogTransformer
 
 from feature_engine.outliers import OutlierTrimmer
 
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+
 
 def Train_model():
     print("train")
     dataTrain = pd.read_csv('train.csv')
     dataTest = pd.read_csv('test.csv')
+    
+    var_preds = ['Age', 'Flight Distance', 'Departure Delay in Minutes', 'Arrival Delay in Minutes', 'Inflight wifi service', 'Departure/Arrival time convenient', 'Ease of Online booking', 'Gate location', 'Food and drink', 'Online boarding', 'Seat comfort', 'Inflight entertainment', 'On-board service', 'Leg room service', 'Baggage handling', 'Checkin service', 'Inflight service', 'Cleanliness', 'Gender', 'Customer Type', 'Type of Travel', 'Class']
+    
+    y_test = dataTest['satisfaction']
+    y_train = dataTrain['satisfaction']
+    
+    y_train = pd.get_dummies(y_train,drop_first=True)
+    y_test = pd.get_dummies(y_test,drop_first=True)
     
     NUMERICAL_VARS_WITH_NA = ['Arrival Delay in Minutes']
     CATEGORICAL_VARIABLES = ['Gender', 'Customer Type', 'Type of Travel']
@@ -44,22 +54,22 @@ def Train_model():
             OrdinalEncoder(encoding_method='ordered', variables=CATEGORICAL_VARS_MAP)
         ),
 
-        # 4. Outlier
-        ('outlier',
-            OutlierTrimmer(capping_method='iqr', tail='right', fold=1.5, variables=OUTLIER)
-        ),
-
-        # 5. Feature Scaling
+        # 3. Feature Scaling
         ('scaler',
             MinMaxScaler()),
-        
-        ('modelo_lasso', 
-             Lasso(alpha=0.01, random_state=2022)
+
+        ('modelo', 
+             RandomForestClassifier(criterion = 'entropy', max_depth=None, n_estimators= 150)
         )
     ])
     
+    pipeline_fe.fit(dataTrain[var_preds], y_train['satisfied'])
     
-
     
 def predict():
+    print(predict)
     
+    
+    
+if __name__ == '__main__':
+    Train_model()
