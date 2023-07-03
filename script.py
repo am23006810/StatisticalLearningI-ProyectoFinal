@@ -25,12 +25,13 @@ from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, roc_auc_score
 
 
+var_preds = ['Age', 'Flight Distance', 'Departure Delay in Minutes', 'Arrival Delay in Minutes', 'Inflight wifi service', 'Departure/Arrival time convenient', 'Ease of Online booking', 'Gate location', 'Food and drink', 'Online boarding', 'Seat comfort', 'Inflight entertainment', 'On-board service', 'Leg room service', 'Baggage handling', 'Checkin service', 'Inflight service', 'Cleanliness', 'Gender', 'Customer Type', 'Type of Travel', 'Class']
+
+
 def Train_model():
     print("train")
     dataTrain = pd.read_csv('train.csv')
     dataTest = pd.read_csv('test.csv')
-    
-    var_preds = ['Age', 'Flight Distance', 'Departure Delay in Minutes', 'Arrival Delay in Minutes', 'Inflight wifi service', 'Departure/Arrival time convenient', 'Ease of Online booking', 'Gate location', 'Food and drink', 'Online boarding', 'Seat comfort', 'Inflight entertainment', 'On-board service', 'Leg room service', 'Baggage handling', 'Checkin service', 'Inflight service', 'Cleanliness', 'Gender', 'Customer Type', 'Type of Travel', 'Class']
     
     y_test = dataTest['satisfaction']
     y_train = dataTrain['satisfaction']
@@ -87,7 +88,7 @@ def Train_model():
     tiempo_transcurrido = fecha_hora_fin - fecha_hora_inicio
     tiempo_transcurrido_segundos = tiempo_transcurrido.total_seconds()
     
-    nombre_archivo = fecha_hora_inicio.strftime('%Y%m%d_%H%M%S') + '.txt'
+    nombre_archivo = fecha_hora_inicio.strftime('./script_outputs/%Y%m%d_%H%M%S') + '.txt'
     
     with open(nombre_archivo, 'a') as archivo:
         archivo.write('Fecha y hora de ejecución: {}\n'.format(fecha_hora_inicio))
@@ -95,13 +96,54 @@ def Train_model():
         archivo.write('Accuracy: {}\n'.format(accuracy))
         archivo.write('Specificity: {}\n'.format(specificity))
         archivo.write('Sensitivity: {}\n'.format(sensitivity))
+        archivo.write('ROC-AUC: {}\n'.format(sensitivity))
         archivo.write('\n')
+        
+    return pipeline_fe
     
     
-def predict():
-    print(predict)
+def predict(input_file, pipeline):
+    print(f'Input file: {input_file}')
+    fecha_hora_inicio = datetime.datetime.now()
+    nombre_archivo = fecha_hora_inicio.strftime('./script_outputs/%Y%m%d_%H%M%S') + '.csv'
+    
+    df_input = pd.read_csv(input_file)
+    results = pipeline.predict(df_input[var_preds])
+    df_res = pd.DataFrame(results,columns=['predictions'])
+    df_res.to_csv(nombre_archivo)
+    return nombre_archivo
+                          
+    
+    
+    
+    
+def main():
+
+    keep = True
+    modelTrained = False
+    
+    modelpipeline = None
+    
+    while(keep):
+        user_input = input("¡Bienvenido! ¿Qué desea hacer?\n 1. Entrenar el modelo\n2. Hacer una prediccion\n3.Terminar: ")
+        print(user_input)
+        if(user_input == '1'):
+            print("Iniciando entrenamiento...")
+            modelpipeline = Train_model()
+            print("Modelo entrenado")
+        elif(user_input=='2'):
+            if(modelpipeline != None):
+                narchivo = input("Ingrese el nombre del archivo a usar como parametro: ")
+                print("Iniciando predicciones...")
+                noutput = predict(narchivo, modelpipeline)
+                print(f"Predicciones almacenadas en {noutput}")
+            else:
+                print("Debe entrenar un modelo primero")
+        else:
+            keep = False
+    
     
     
     
 if __name__ == '__main__':
-    Train_model()
+    main()
